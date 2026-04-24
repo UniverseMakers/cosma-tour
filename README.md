@@ -57,6 +57,42 @@ npm run build -- --base=/tour/
 - `public/panoramas/example-room/`: bundled example panorama images.
 - `.github/workflows/deploy.yml`: GitHub Actions deployment workflow.
 
+## Implementation Notes
+
+### Application flow
+
+1. `src/main.tsx` mounts the React application.
+2. `src/App.tsx` calls `loadTour()` on startup.
+3. `src/config/loadTour.ts` fetches `public/tours/room.yaml`, parses it with `yaml`, validates it, and resolves the start scene.
+4. `src/App.tsx` stores the loaded tour, current scene id, and active info hotspot in React state.
+5. `src/components/PanoramaViewer.tsx` creates Marzipano scenes imperatively and switches between them as React state changes.
+6. `src/components/InfoOverlay.tsx` renders info hotspot content as an accessible overlay dialog.
+
+### Why Marzipano is wrapped imperatively
+
+Marzipano manages its own viewer instance, scene graph, and hotspot DOM nodes. Because of that, `PanoramaViewer.tsx` builds the viewer inside a `useEffect` and keeps a map of created scenes in a ref.
+
+That split keeps React responsible for app state and overlays, while Marzipano remains responsible for panorama rendering and hotspot placement.
+
+### Runtime validation
+
+`src/config/loadTour.ts` performs two kinds of validation:
+
+- field-level parsing validation while converting raw YAML data into TypeScript objects
+- cross-scene validation after parsing, for checks such as duplicate ids and broken link targets
+
+The loader throws for hard errors and records warnings for soft issues such as zero or multiple `start: true` scenes.
+
+### Navigation arrow direction
+
+Navigation hotspot placement still comes entirely from YAML `yaw` and `pitch` values.
+
+The arrow icon's rotation is inferred separately from each scene's normalized `position.x` and `position.y` values. That means the hotspot stays exactly where authored in the panorama, but its arrow can still point roughly toward the linked destination.
+
+### Source code documentation
+
+The TypeScript source files are documented with file-level and function-level comments so the implementation can be maintained without having to reverse-engineer the viewer lifecycle or YAML parsing rules.
+
 ## Panorama Images
 
 The current example room uses three test images in:

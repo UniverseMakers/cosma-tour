@@ -1,10 +1,20 @@
 import type { TourInfoHotspot } from '../types/tour';
 
+/**
+ * Props for the info overlay dialog.
+ */
 type InfoOverlayProps = {
   info: TourInfoHotspot | null;
   onClose: () => void;
 };
 
+/**
+ * Lightweight dialog that displays the title and body content for the currently
+ * selected info hotspot.
+ *
+ * The overlay is intentionally simple: the active hotspot is held in React
+ * state at the app level, and clicking the backdrop or close button clears it.
+ */
 function InfoOverlay({ info, onClose }: InfoOverlayProps) {
   if (!info) {
     return null;

@@ -2,6 +2,9 @@ import { useEffect, useRef } from 'react';
 import Marzipano from 'marzipano';
 import type { LoadedTourConfig, TourInfoHotspot, TourLinkHotspot, TourScene } from '../types/tour';
 
+/**
+ * Props accepted by the Marzipano wrapper component.
+ */
 type PanoramaViewerProps = {
   currentSceneId: string;
   tour: LoadedTourConfig;
@@ -9,19 +12,37 @@ type PanoramaViewerProps = {
   onOpenInfo: (info: TourInfoHotspot) => void;
 };
 
+/**
+ * Marzipano scenes are created imperatively, so the React component keeps a map
+ * keyed by scene id for fast switching after initial construction.
+ */
 type MarzipanoSceneMap = Record<string, any>;
 
 const DEFAULT_FOV = 90;
 const DEFAULT_WIDTH = 4000;
 
+/**
+ * Convert human-authored degree values from YAML into the radians Marzipano
+ * expects for view and hotspot coordinates.
+ */
 function degreesToRadians(value: number) {
   return (value * Math.PI) / 180;
 }
 
+/**
+ * Convert from radians back to degrees for CSS rotation of navigation icons.
+ */
 function radiansToDegrees(value: number) {
   return (value * 180) / Math.PI;
 }
 
+/**
+ * Resolve a panorama path from the YAML config.
+ *
+ * Relative public paths are rebased onto Vite's runtime base URL so they work
+ * both locally and when deployed under `/tour/`. Absolute remote URLs are left
+ * untouched so future CDN or object-store hosting can be configured in YAML.
+ */
 function resolvePanoramaUrl(path: string) {
   if (/^https?:\/\//i.test(path)) {
     return path;
@@ -31,6 +52,14 @@ function resolvePanoramaUrl(path: string) {
   return new URL(normalizedPath, new URL(import.meta.env.BASE_URL, window.location.origin)).toString();
 }
 
+/**
+ * Infer a 2D direction from one scene to another using their stored normalised
+ * room coordinates.
+ *
+ * This is only used to rotate the arrow glyph rendered inside the hotspot; the
+ * clickable hotspot position inside the panorama still comes from the YAML's
+ * authored `yaw` and `pitch` values.
+ */
 function getLinkDirectionDegrees(scene: TourScene, link: TourLinkHotspot, scenesById: Map<string, TourScene>) {
   const targetScene = scenesById.get(link.target);
 
@@ -48,6 +77,9 @@ function getLinkDirectionDegrees(scene: TourScene, link: TourLinkHotspot, scenes
   return radiansToDegrees(Math.atan2(deltaY, deltaX));
 }
 
+/**
+ * Build an accessible button element for scene-to-scene navigation.
+ */
 function createNavigationHotspot(
   scene: TourScene,
   link: TourLinkHotspot,
@@ -72,6 +104,9 @@ function createNavigationHotspot(
   return button;
 }
 
+/**
+ * Build an accessible button element for opening an information overlay.
+ */
 function createInfoHotspot(info: TourInfoHotspot, onOpenInfo: (item: TourInfoHotspot) => void) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -83,6 +118,16 @@ function createInfoHotspot(info: TourInfoHotspot, onOpenInfo: (item: TourInfoHot
   return button;
 }
 
+/**
+ * Construct one Marzipano scene from the typed YAML scene definition.
+ *
+ * Each scene gets:
+ * - an image source
+ * - equirectangular geometry
+ * - an initial view
+ * - navigation hotspots
+ * - info hotspots
+ */
 function buildScene(
   viewer: any,
   scene: TourScene,
@@ -122,6 +167,14 @@ function buildScene(
   return marzipanoScene;
 }
 
+/**
+ * Imperative React wrapper around Marzipano.
+ *
+ * Marzipano manages its own DOM and scene lifecycle, so this component bridges
+ * from React state into Marzipano's API by creating all scenes once whenever the
+ * tour definition changes, then switching between them when `currentSceneId`
+ * updates.
+ */
 function PanoramaViewer({ currentSceneId, tour, onNavigate, onOpenInfo }: PanoramaViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const sceneMapRef = useRef<MarzipanoSceneMap>({});
@@ -134,6 +187,9 @@ function PanoramaViewer({ currentSceneId, tour, onNavigate, onOpenInfo }: Panora
     }
 
     container.innerHTML = '';
+
+    // Marzipano is mounted directly into this container rather than rendering a
+    // React tree for each panorama.
     const viewer = new Marzipano.Viewer(container, {
       controls: {
         mouseViewMode: 'drag',
@@ -156,6 +212,9 @@ function PanoramaViewer({ currentSceneId, tour, onNavigate, onOpenInfo }: Panora
   }, [onNavigate, onOpenInfo, tour]);
 
   useEffect(() => {
+    // Switching scenes is much cheaper than rebuilding the whole viewer, so
+    // keep the imperative scene instances around and just tell Marzipano which
+    // one to show.
     const currentScene = sceneMapRef.current[currentSceneId];
     if (!currentScene) {
       return;

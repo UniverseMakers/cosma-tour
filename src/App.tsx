@@ -4,8 +4,21 @@ import PanoramaViewer from './components/PanoramaViewer';
 import { loadTour } from './config/loadTour';
 import type { LoadedTourConfig, TourInfoHotspot } from './types/tour';
 
+/**
+ * Minimal app state machine for the asynchronous tour bootstrap process.
+ */
 type LoadState = 'loading' | 'ready' | 'error';
 
+/**
+ * Top-level application shell.
+ *
+ * Responsibilities:
+ * - fetch and validate the YAML tour definition
+ * - select the initial start scene
+ * - track the currently active scene id
+ * - track the currently open info overlay
+ * - render loading and error states around the viewer
+ */
 function App() {
   const [status, setStatus] = useState<LoadState>('loading');
   const [tour, setTour] = useState<LoadedTourConfig | null>(null);
@@ -14,6 +27,8 @@ function App() {
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
+    // Guard against setting state if the component unmounts before the fetch
+    // and YAML parse complete.
     let cancelled = false;
 
     setStatus('loading');
@@ -49,11 +64,18 @@ function App() {
     [currentSceneId, tour],
   );
 
+  /**
+   * Close any open info card when moving between scenes so the overlay never
+   * becomes detached from the panorama it came from.
+   */
   const handleNavigate = useCallback((sceneId: string) => {
     setActiveInfo(null);
     setCurrentSceneId(sceneId);
   }, []);
 
+  /**
+   * Store the selected info hotspot so the overlay can render its content.
+   */
   const handleOpenInfo = useCallback((info: TourInfoHotspot) => {
     setActiveInfo(info);
   }, []);

@@ -8,10 +8,16 @@ import type {
   TourScene,
 } from '../types/tour';
 
+/**
+ * Narrow unknown YAML parser output into a plain object shape.
+ */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+/**
+ * Read a required non-empty string field from parsed YAML.
+ */
 function readString(value: unknown, fieldName: string) {
   if (typeof value !== 'string' || value.trim() === '') {
     throw new Error(`Expected ${fieldName} to be a non-empty string.`);
@@ -20,6 +26,9 @@ function readString(value: unknown, fieldName: string) {
   return value;
 }
 
+/**
+ * Read a required numeric field from parsed YAML.
+ */
 function readNumber(value: unknown, fieldName: string) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     throw new Error(`Expected ${fieldName} to be a number.`);
@@ -28,6 +37,9 @@ function readNumber(value: unknown, fieldName: string) {
   return value;
 }
 
+/**
+ * Parse an optional initial view block for a scene.
+ */
 function readInitialView(value: unknown, sceneId: string): TourInitialView | undefined {
   if (value === undefined) {
     return undefined;
@@ -44,6 +56,9 @@ function readInitialView(value: unknown, sceneId: string): TourInitialView | und
   };
 }
 
+/**
+ * Parse scene-to-scene navigation hotspots.
+ */
 function readLinks(value: unknown, sceneId: string): TourLinkHotspot[] {
   if (value === undefined) {
     return [];
@@ -67,6 +82,9 @@ function readLinks(value: unknown, sceneId: string): TourLinkHotspot[] {
   });
 }
 
+/**
+ * Parse informational hotspots.
+ */
 function readInfo(value: unknown, sceneId: string): TourInfoHotspot[] {
   if (value === undefined) {
     return [];
@@ -91,6 +109,9 @@ function readInfo(value: unknown, sceneId: string): TourInfoHotspot[] {
   });
 }
 
+/**
+ * Parse the array of scenes and validate per-scene structural constraints.
+ */
 function readScenes(value: unknown): TourScene[] {
   if (!Array.isArray(value) || value.length === 0) {
     throw new Error('Expected scenes to be a non-empty array.');
@@ -128,6 +149,13 @@ function readScenes(value: unknown): TourScene[] {
   });
 }
 
+/**
+ * Validate cross-scene relationships once the YAML has been parsed into typed
+ * objects.
+ *
+ * This catches problems that require knowledge of the whole tour, such as
+ * duplicate ids, broken navigation targets, and ambiguous start-scene flags.
+ */
 function validateTour(config: TourConfig): LoadedTourConfig {
   const warnings: string[] = [];
   const sceneIds = new Set<string>();
@@ -162,6 +190,9 @@ function validateTour(config: TourConfig): LoadedTourConfig {
   };
 }
 
+/**
+ * Fetch, parse, validate, and normalise the single room-tour YAML file.
+ */
 export async function loadTour(): Promise<LoadedTourConfig> {
   const response = await fetch(`${import.meta.env.BASE_URL}tours/room.yaml`);
 
