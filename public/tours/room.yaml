@@ -18,7 +18,7 @@ scenes:
         label: Move to scene 2
         yaw: 0
         pitch: 0
-        rotation: 0
+        rotation: -90
     info:
       - id: welcome
         title: COSMA at Durham
@@ -46,12 +46,12 @@ scenes:
         label: Back to start
         yaw: 192
         pitch: -14
-        rotation: 180
+        rotation: 0
       - target: scene-3
         label: Move to scene 3
         yaw: 6
         pitch: -13
-        rotation: 0
+        rotation: -90
     info:
       - id: memory
         title: High-memory capability
