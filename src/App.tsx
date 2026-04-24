@@ -92,14 +92,10 @@ function App() {
   return (
     <div className="app-shell">
       <div className="app-chrome">
-        <div className="panel">
+        <div className="panel title-panel">
           <p className="eyebrow">COSMA Tour</p>
           <h1>{tour?.title ?? 'Room Explorer'}</h1>
           <p>{currentScene?.title ?? 'Loading panorama scenes...'}</p>
-        </div>
-        <div className="panel help-panel">
-          <p>Drag to look around.</p>
-          <p>Use {'>'} hotspots to move and i hotspots to open information.</p>
         </div>
       </div>
 
