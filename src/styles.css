@@ -122,7 +122,17 @@ button {
 }
 
 .hotspot-nav {
+  padding: 0;
   background: rgba(35, 136, 255, 0.9);
+}
+
+.hotspot-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
 }
 
 .hotspot-info {

@@ -18,6 +18,10 @@ function degreesToRadians(value: number) {
   return (value * Math.PI) / 180;
 }
 
+function radiansToDegrees(value: number) {
+  return (value * 180) / Math.PI;
+}
+
 function resolvePanoramaUrl(path: string) {
   if (/^https?:\/\//i.test(path)) {
     return path;
@@ -27,13 +31,43 @@ function resolvePanoramaUrl(path: string) {
   return new URL(normalizedPath, new URL(import.meta.env.BASE_URL, window.location.origin)).toString();
 }
 
-function createNavigationHotspot(link: TourLinkHotspot, onNavigate: (sceneId: string) => void) {
+function getLinkDirectionDegrees(scene: TourScene, link: TourLinkHotspot, scenesById: Map<string, TourScene>) {
+  const targetScene = scenesById.get(link.target);
+
+  if (!targetScene) {
+    return 0;
+  }
+
+  const deltaX = targetScene.position.x - scene.position.x;
+  const deltaY = targetScene.position.y - scene.position.y;
+
+  if (deltaX === 0 && deltaY === 0) {
+    return 0;
+  }
+
+  return radiansToDegrees(Math.atan2(deltaY, deltaX));
+}
+
+function createNavigationHotspot(
+  scene: TourScene,
+  link: TourLinkHotspot,
+  scenesById: Map<string, TourScene>,
+  onNavigate: (sceneId: string) => void,
+) {
   const button = document.createElement('button');
+  const icon = document.createElement('span');
+  const angle = getLinkDirectionDegrees(scene, link, scenesById);
+
   button.type = 'button';
   button.className = 'hotspot-button hotspot-nav';
   button.setAttribute('aria-label', link.label ?? `Go to ${link.target}`);
   button.title = link.label ?? `Go to ${link.target}`;
-  button.textContent = '>';
+
+  icon.className = 'hotspot-nav-icon';
+  icon.textContent = '➜';
+  icon.style.transform = `rotate(${angle}deg)`;
+
+  button.appendChild(icon);
   button.addEventListener('click', () => onNavigate(link.target));
   return button;
 }
@@ -52,6 +86,7 @@ function createInfoHotspot(info: TourInfoHotspot, onOpenInfo: (item: TourInfoHot
 function buildScene(
   viewer: any,
   scene: TourScene,
+  scenesById: Map<string, TourScene>,
   onNavigate: (sceneId: string) => void,
   onOpenInfo: (info: TourInfoHotspot) => void,
 ) {
@@ -71,7 +106,7 @@ function buildScene(
   });
 
   scene.links.forEach((link) => {
-    marzipanoScene.hotspotContainer().createHotspot(createNavigationHotspot(link, onNavigate), {
+    marzipanoScene.hotspotContainer().createHotspot(createNavigationHotspot(scene, link, scenesById, onNavigate), {
       yaw: degreesToRadians(link.yaw),
       pitch: degreesToRadians(link.pitch),
     });
@@ -106,9 +141,10 @@ function PanoramaViewer({ currentSceneId, tour, onNavigate, onOpenInfo }: Panora
     });
 
     sceneMapRef.current = {};
+    const scenesById = new Map(tour.scenes.map((scene) => [scene.id, scene]));
 
     for (const scene of tour.scenes) {
-      sceneMapRef.current[scene.id] = buildScene(viewer, scene, onNavigate, onOpenInfo);
+      sceneMapRef.current[scene.id] = buildScene(viewer, scene, scenesById, onNavigate, onOpenInfo);
     }
 
     sceneMapRef.current[currentSceneId]?.switchTo({ transitionDuration: 0 });
