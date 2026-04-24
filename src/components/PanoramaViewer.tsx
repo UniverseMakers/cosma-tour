@@ -75,6 +75,10 @@ function resolvePanoramaUrl(path: string) {
  * @returns A clockwise rotation angle in degrees for the hotspot icon.
  */
 function getLinkDirectionDegrees(scene: TourScene, link: TourLinkHotspot, scenesById: Map<string, TourScene>) {
+  if (typeof link.rotation === 'number') {
+    return link.rotation;
+  }
+
   const targetScene = scenesById.get(link.target);
 
   if (!targetScene) {
@@ -96,7 +100,8 @@ function getLinkDirectionDegrees(scene: TourScene, link: TourLinkHotspot, scenes
  *
  * @param scene The scene the hotspot belongs to.
  * @param link The link definition being converted into a button.
- * @param scenesById Lookup map used to infer arrow direction.
+ * @param scenesById Lookup map used to infer arrow direction when no manual
+ * rotation is provided.
  * @param onNavigate Callback fired when the hotspot is activated.
  * @returns A DOM button element ready to hand to Marzipano.
  */

@@ -76,6 +76,7 @@ scenes:
         label: Move forward
         yaw: 0
         pitch: -10
+        rotation: 0
     info:
       - id: welcome
         title: Welcome
@@ -93,6 +94,7 @@ scenes:
 
 - Defined in `links`
 - Use `target`, `label`, `yaw`, and `pitch`
+- Optional `rotation` sets the arrow icon direction in degrees
 - Clicking one changes scene
 
 ### Info hotspots

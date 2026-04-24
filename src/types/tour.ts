@@ -29,6 +29,7 @@ export type TourLinkHotspot = {
   label?: string;
   yaw: number;
   pitch: number;
+  rotation?: number;
 };
 
 /**

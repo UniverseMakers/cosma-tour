@@ -101,6 +101,10 @@ function readLinks(value: unknown, sceneId: string): TourLinkHotspot[] {
       label: typeof entry.label === 'string' ? entry.label : undefined,
       yaw: readNumber(entry.yaw, `links[${index}].yaw for scene ${sceneId}`),
       pitch: readNumber(entry.pitch, `links[${index}].pitch for scene ${sceneId}`),
+      rotation:
+        entry.rotation === undefined
+          ? undefined
+          : readNumber(entry.rotation, `links[${index}].rotation for scene ${sceneId}`),
     };
   });
 }
