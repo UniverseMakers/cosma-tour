@@ -18,6 +18,9 @@ type LoadState = 'loading' | 'ready' | 'error';
  * - track the currently active scene id
  * - track the currently open info overlay
  * - render loading and error states around the viewer
+ *
+ * @returns The complete application shell including viewer, overlays, and
+ * status panels.
  */
 function App() {
   const [status, setStatus] = useState<LoadState>('loading');
@@ -67,6 +70,9 @@ function App() {
   /**
    * Close any open info card when moving between scenes so the overlay never
    * becomes detached from the panorama it came from.
+   *
+   * @param sceneId The id of the scene that should become active.
+   * @returns Nothing.
    */
   const handleNavigate = useCallback((sceneId: string) => {
     setActiveInfo(null);
@@ -75,6 +81,9 @@ function App() {
 
   /**
    * Store the selected info hotspot so the overlay can render its content.
+   *
+   * @param info The hotspot content to display in the overlay.
+   * @returns Nothing.
    */
   const handleOpenInfo = useCallback((info: TourInfoHotspot) => {
     setActiveInfo(info);

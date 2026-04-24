@@ -10,6 +10,9 @@ import type {
 
 /**
  * Narrow unknown YAML parser output into a plain object shape.
+ *
+ * @param value Unknown parsed value.
+ * @returns `true` when the value is a non-null plain object.
  */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -17,6 +20,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 /**
  * Read a required non-empty string field from parsed YAML.
+ *
+ * @param value Candidate field value.
+ * @param fieldName Human-readable field name used in error messages.
+ * @returns The validated string.
+ * @throws {Error} If the value is missing or not a non-empty string.
  */
 function readString(value: unknown, fieldName: string) {
   if (typeof value !== 'string' || value.trim() === '') {
@@ -28,6 +36,11 @@ function readString(value: unknown, fieldName: string) {
 
 /**
  * Read a required numeric field from parsed YAML.
+ *
+ * @param value Candidate field value.
+ * @param fieldName Human-readable field name used in error messages.
+ * @returns The validated number.
+ * @throws {Error} If the value is missing or not numeric.
  */
 function readNumber(value: unknown, fieldName: string) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -39,6 +52,11 @@ function readNumber(value: unknown, fieldName: string) {
 
 /**
  * Parse an optional initial view block for a scene.
+ *
+ * @param value Raw `initialView` value from YAML.
+ * @param sceneId Scene id used for error reporting.
+ * @returns A typed initial view object, or `undefined` when omitted.
+ * @throws {Error} If the block exists but is malformed.
  */
 function readInitialView(value: unknown, sceneId: string): TourInitialView | undefined {
   if (value === undefined) {
@@ -58,6 +76,11 @@ function readInitialView(value: unknown, sceneId: string): TourInitialView | und
 
 /**
  * Parse scene-to-scene navigation hotspots.
+ *
+ * @param value Raw `links` value from YAML.
+ * @param sceneId Scene id used for error reporting.
+ * @returns A validated array of navigation hotspots.
+ * @throws {Error} If the links block is malformed.
  */
 function readLinks(value: unknown, sceneId: string): TourLinkHotspot[] {
   if (value === undefined) {
@@ -84,6 +107,11 @@ function readLinks(value: unknown, sceneId: string): TourLinkHotspot[] {
 
 /**
  * Parse informational hotspots.
+ *
+ * @param value Raw `info` value from YAML.
+ * @param sceneId Scene id used for error reporting.
+ * @returns A validated array of info hotspots.
+ * @throws {Error} If the info block is malformed.
  */
 function readInfo(value: unknown, sceneId: string): TourInfoHotspot[] {
   if (value === undefined) {
@@ -111,6 +139,10 @@ function readInfo(value: unknown, sceneId: string): TourInfoHotspot[] {
 
 /**
  * Parse the array of scenes and validate per-scene structural constraints.
+ *
+ * @param value Raw `scenes` value from YAML.
+ * @returns A validated array of typed scene definitions.
+ * @throws {Error} If the scenes array or any scene entry is malformed.
  */
 function readScenes(value: unknown): TourScene[] {
   if (!Array.isArray(value) || value.length === 0) {
@@ -155,6 +187,10 @@ function readScenes(value: unknown): TourScene[] {
  *
  * This catches problems that require knowledge of the whole tour, such as
  * duplicate ids, broken navigation targets, and ambiguous start-scene flags.
+ *
+ * @param config Parsed tour config before runtime-only fields are added.
+ * @returns The validated config augmented with `startSceneId` and warnings.
+ * @throws {Error} If duplicate scene ids or broken link targets are found.
  */
 function validateTour(config: TourConfig): LoadedTourConfig {
   const warnings: string[] = [];
@@ -192,6 +228,9 @@ function validateTour(config: TourConfig): LoadedTourConfig {
 
 /**
  * Fetch, parse, validate, and normalise the single room-tour YAML file.
+ *
+ * @returns A fully validated runtime tour config.
+ * @throws {Error} If fetching, parsing, or validation fails.
  */
 export async function loadTour(): Promise<LoadedTourConfig> {
   const response = await fetch(`${import.meta.env.BASE_URL}tours/room.yaml`);

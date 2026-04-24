@@ -24,6 +24,9 @@ const DEFAULT_WIDTH = 4000;
 /**
  * Convert human-authored degree values from YAML into the radians Marzipano
  * expects for view and hotspot coordinates.
+ *
+ * @param value Angle in degrees.
+ * @returns The same angle expressed in radians.
  */
 function degreesToRadians(value: number) {
   return (value * Math.PI) / 180;
@@ -31,6 +34,9 @@ function degreesToRadians(value: number) {
 
 /**
  * Convert from radians back to degrees for CSS rotation of navigation icons.
+ *
+ * @param value Angle in radians.
+ * @returns The same angle expressed in degrees.
  */
 function radiansToDegrees(value: number) {
   return (value * 180) / Math.PI;
@@ -42,6 +48,9 @@ function radiansToDegrees(value: number) {
  * Relative public paths are rebased onto Vite's runtime base URL so they work
  * both locally and when deployed under `/tour/`. Absolute remote URLs are left
  * untouched so future CDN or object-store hosting can be configured in YAML.
+ *
+ * @param path Raw panorama path from YAML.
+ * @returns A browser-loadable absolute URL for the panorama image.
  */
 function resolvePanoramaUrl(path: string) {
   if (/^https?:\/\//i.test(path)) {
@@ -59,6 +68,11 @@ function resolvePanoramaUrl(path: string) {
  * This is only used to rotate the arrow glyph rendered inside the hotspot; the
  * clickable hotspot position inside the panorama still comes from the YAML's
  * authored `yaw` and `pitch` values.
+ *
+ * @param scene The current source scene.
+ * @param link The navigation link being rendered.
+ * @param scenesById Lookup map of all scenes keyed by id.
+ * @returns A clockwise rotation angle in degrees for the hotspot icon.
  */
 function getLinkDirectionDegrees(scene: TourScene, link: TourLinkHotspot, scenesById: Map<string, TourScene>) {
   const targetScene = scenesById.get(link.target);
@@ -79,6 +93,12 @@ function getLinkDirectionDegrees(scene: TourScene, link: TourLinkHotspot, scenes
 
 /**
  * Build an accessible button element for scene-to-scene navigation.
+ *
+ * @param scene The scene the hotspot belongs to.
+ * @param link The link definition being converted into a button.
+ * @param scenesById Lookup map used to infer arrow direction.
+ * @param onNavigate Callback fired when the hotspot is activated.
+ * @returns A DOM button element ready to hand to Marzipano.
  */
 function createNavigationHotspot(
   scene: TourScene,
@@ -106,6 +126,10 @@ function createNavigationHotspot(
 
 /**
  * Build an accessible button element for opening an information overlay.
+ *
+ * @param info The info hotspot definition being rendered.
+ * @param onOpenInfo Callback fired when the hotspot is activated.
+ * @returns A DOM button element ready to hand to Marzipano.
  */
 function createInfoHotspot(info: TourInfoHotspot, onOpenInfo: (item: TourInfoHotspot) => void) {
   const button = document.createElement('button');
@@ -127,6 +151,13 @@ function createInfoHotspot(info: TourInfoHotspot, onOpenInfo: (item: TourInfoHot
  * - an initial view
  * - navigation hotspots
  * - info hotspots
+ *
+ * @param viewer The shared Marzipano viewer instance.
+ * @param scene The typed scene definition to construct.
+ * @param scenesById Lookup map of all scenes keyed by id.
+ * @param onNavigate Callback used by navigation hotspots.
+ * @param onOpenInfo Callback used by info hotspots.
+ * @returns The constructed Marzipano scene instance.
  */
 function buildScene(
   viewer: any,
@@ -174,6 +205,13 @@ function buildScene(
  * from React state into Marzipano's API by creating all scenes once whenever the
  * tour definition changes, then switching between them when `currentSceneId`
  * updates.
+ *
+ * @param props Component props controlling the active scene and hotspot actions.
+ * @param props.currentSceneId Id of the scene that should currently be visible.
+ * @param props.tour Fully loaded and validated tour definition.
+ * @param props.onNavigate Callback fired when a navigation hotspot is clicked.
+ * @param props.onOpenInfo Callback fired when an info hotspot is clicked.
+ * @returns The DOM container that Marzipano mounts itself into.
  */
 function PanoramaViewer({ currentSceneId, tour, onNavigate, onOpenInfo }: PanoramaViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);

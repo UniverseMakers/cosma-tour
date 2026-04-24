@@ -14,6 +14,12 @@ type InfoOverlayProps = {
  *
  * The overlay is intentionally simple: the active hotspot is held in React
  * state at the app level, and clicking the backdrop or close button clears it.
+ *
+ * @param props Component props containing the current hotspot and close handler.
+ * @param props.info The currently selected info hotspot, or `null` when no
+ * overlay should be shown.
+ * @param props.onClose Callback used to dismiss the overlay.
+ * @returns A dialog when an info hotspot is active, otherwise `null`.
  */
 function InfoOverlay({ info, onClose }: InfoOverlayProps) {
   if (!info) {
