@@ -1,0 +1,49 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout room tour app
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with /tour/ base path
+        run: npx vite build --base=/tour/
+
+      - name: Checkout GitHub Pages repo
+        uses: actions/checkout@v4
+        with:
+          repository: UniverseMakers/universemakers.github.io
+          token: ${{ secrets.PAGES_DEPLOY_TOKEN }}
+          path: pages-repo
+
+      - name: Deploy built files to tour/ directory
+        run: |
+          rm -rf pages-repo/tour
+          cp -r dist pages-repo/tour
+
+      - name: Commit and push to Pages repo
+        run: |
+          cd pages-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tour/
+          git diff --staged --quiet && echo "No changes to deploy" && exit 0
+          git commit -m "Deploy room tour from ${{ github.sha }}"
+          git push
