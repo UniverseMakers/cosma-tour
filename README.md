@@ -1,130 +1,59 @@
 # cosma-tour
 
-React + Vite + TypeScript web app for a lightweight Google-Street-View-style COSMA room explorer built on Marzipano.
+Lightweight 360-degree COSMA room tour built with React, Vite, TypeScript, and Marzipano.
 
-The app loads a YAML tour definition at runtime, displays 360-degree panorama scenes, and lets users click navigation hotspots to move between scenes or click info hotspots to open overlays.
+The app loads a YAML tour definition, displays panorama scenes, lets users move between scenes with navigation hotspots, and shows information cards from info hotspots.
 
-## What This App Does
+## Run locally
 
-- Loads `public/tours/room.yaml` with `fetch` at runtime.
-- Parses the YAML with the `yaml` package.
-- Validates scene ids, duplicate ids, panorama paths, normalized coordinates, start scene warnings, and navigation targets.
-- Uses Marzipano to render equirectangular panorama scenes.
-- Uses YAML-authored hotspots for both navigation and information overlays.
-- Supports panorama image paths that are either:
-  - relative/app-public paths such as `/panoramas/example-room/start.jpg`
-  - remote absolute URLs such as `https://...`
-- Builds correctly for a GitHub Pages subpath at `/tour/`.
-
-## Install
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-## Run Locally
+Start the dev server:
 
 ```bash
 npm run dev
 ```
 
-Vite will start a local dev server, typically at `http://127.0.0.1:5173/` or `http://localhost:5173/`.
-
-## Build
-
-Standard production build:
+Build for production:
 
 ```bash
 npm run build
 ```
 
-GitHub Pages build with the `/tour/` base path:
+Build for GitHub Pages under `/tour/`:
 
 ```bash
 npm run build -- --base=/tour/
 ```
 
-## Project Structure
+## Main files
 
-- `src/main.tsx`: React entry point.
-- `src/App.tsx`: app shell, loading/error states, overlay state.
-- `src/components/PanoramaViewer.tsx`: Marzipano wrapper and hotspot creation.
-- `src/components/InfoOverlay.tsx`: info card overlay.
-- `src/config/loadTour.ts`: YAML fetch, parse, validation, and start-scene resolution.
-- `src/types/tour.ts`: TypeScript types for the tour schema.
-- `src/styles.css`: full-page viewer styling.
-- `public/tours/room.yaml`: current room/tour definition.
-- `public/panoramas/example-room/`: bundled example panorama images.
-- `.github/workflows/deploy.yml`: GitHub Actions deployment workflow.
+- `public/tours/room.yaml`: room/tour configuration
+- `public/panoramas/example-room/`: example panorama images
+- `src/components/PanoramaViewer.tsx`: Marzipano viewer
+- `src/components/InfoOverlay.tsx`: info hotspot overlay
+- `.github/workflows/deploy.yml`: deployment workflow
 
-## Implementation Notes
+## Editing the tour
 
-### Application flow
+The active tour is defined in `public/tours/room.yaml`.
 
-1. `src/main.tsx` mounts the React application.
-2. `src/App.tsx` calls `loadTour()` on startup.
-3. `src/config/loadTour.ts` fetches `public/tours/room.yaml`, parses it with `yaml`, validates it, and resolves the start scene.
-4. `src/App.tsx` stores the loaded tour, current scene id, and active info hotspot in React state.
-5. `src/components/PanoramaViewer.tsx` creates Marzipano scenes imperatively and switches between them as React state changes.
-6. `src/components/InfoOverlay.tsx` renders info hotspot content as an accessible overlay dialog.
+Each scene includes:
 
-### Why Marzipano is wrapped imperatively
+- `id`
+- `title`
+- `panorama`
+- `position.x` and `position.y`
+- optional `start`
+- optional `initialView`
+- optional `links`
+- optional `info`
 
-Marzipano manages its own viewer instance, scene graph, and hotspot DOM nodes. Because of that, `PanoramaViewer.tsx` builds the viewer inside a `useEffect` and keeps a map of created scenes in a ref.
-
-That split keeps React responsible for app state and overlays, while Marzipano remains responsible for panorama rendering and hotspot placement.
-
-### Runtime validation
-
-`src/config/loadTour.ts` performs two kinds of validation:
-
-- field-level parsing validation while converting raw YAML data into TypeScript objects
-- cross-scene validation after parsing, for checks such as duplicate ids and broken link targets
-
-The loader throws for hard errors and records warnings for soft issues such as zero or multiple `start: true` scenes.
-
-### Navigation arrow direction
-
-Navigation hotspot placement still comes entirely from YAML `yaw` and `pitch` values.
-
-The arrow icon's rotation is inferred separately from each scene's normalized `position.x` and `position.y` values. That means the hotspot stays exactly where authored in the panorama, but its arrow can still point roughly toward the linked destination.
-
-### Source code documentation
-
-The TypeScript source files are documented with file-level and function-level comments so the implementation can be maintained without having to reverse-engineer the viewer lifecycle or YAML parsing rules.
-
-## Panorama Images
-
-The current example room uses three test images in:
-
-- `public/panoramas/example-room/start.jpg`
-- `public/panoramas/example-room/scene-2.jpg`
-- `public/panoramas/example-room/scene-3.jpg`
-
-To replace or add panoramas:
-
-1. Put new equirectangular panorama images under `public/panoramas/<room-name>/`.
-2. Update `public/tours/room.yaml` to point scenes at those image paths.
-3. Restart `npm run dev` if needed, or refresh the page.
-
-## YAML Tour Configuration
-
-The app currently expects one YAML file per room/tour. For now the active tour file is:
-
-- `public/tours/room.yaml`
-
-Each scene defines:
-
-- `id`: unique scene id.
-- `title`: display title.
-- `panorama`: relative public path or absolute remote URL.
-- `position.x` and `position.y`: normalized coordinates in `[0, 1]`.
-- `start`: optional start flag.
-- `initialView`: optional `yaw`, `pitch`, and `fov`.
-- `links`: optional navigation hotspots.
-- `info`: optional information hotspots.
-
-Example shape:
+Example:
 
 ```yaml
 id: example-room
@@ -155,74 +84,52 @@ scenes:
         pitch: 5
 ```
 
-## How `start: true` Works
+### Start scene
 
-- The app looks for scenes marked with `start: true`.
-- If exactly one scene is marked, that scene is used first.
-- If none are marked, the app falls back to the first scene and shows a warning.
-- If multiple scenes are marked, the app uses the first one and shows a warning.
+- The scene with `start: true` is used first.
+- If no scene has `start: true`, the app uses the first scene.
 
-## Navigation Hotspots
+### Navigation hotspots
 
-Navigation hotspots are authored manually in YAML with:
+- Defined in `links`
+- Use `target`, `label`, `yaw`, and `pitch`
+- Clicking one changes scene
 
-- `target`: destination scene id.
-- `label`: accessible label/tool tip.
-- `yaw`: hotspot horizontal angle in degrees.
-- `pitch`: hotspot vertical angle in degrees.
+### Info hotspots
 
-Clicking a navigation hotspot switches the Marzipano scene.
+- Defined in `info`
+- Use `id`, `title`, `body`, `yaw`, and `pitch`
+- Clicking one opens an overlay card
 
-## Info Hotspots
+### Panorama paths
 
-Info hotspots are also authored manually in YAML with:
+You can use either:
 
-- `id`
-- `title`
-- `body`
-- `yaw`
-- `pitch`
+- relative public paths such as `/panoramas/example-room/start.jpg`
+- remote absolute URLs such as `https://...`
 
-Clicking an info hotspot opens a React overlay card with the configured title and body text.
+Relative paths work locally and under the `/tour/` GitHub Pages subpath.
 
-## Normalized Scene Positions
+### Normalized positions
 
-Each scene stores normalized `position.x` and `position.y` values in `[0, 1]`.
+`position.x` and `position.y` are stored for future minimap use.
 
-These are reserved for a future minimap and are not rendered yet.
+## Replacing panoramas
 
-## Relative and Remote Panorama Paths
-
-Relative public paths work locally and under GitHub Pages subpath deployment because the app resolves them against Vite's configured base path.
-
-Examples:
-
-- `/panoramas/example-room/start.jpg`
-- `panoramas/example-room/start.jpg`
-
-Remote absolute URLs are passed through unchanged, so scenes can later point at Cloudflare R2, S3, or another CDN.
-
-Example:
-
-```yaml
-panorama: https://example-bucket.examplecdn.com/cosma/start.jpg
-```
+1. Put panorama images under `public/panoramas/<room-name>/`
+2. Update `public/tours/room.yaml` to point at them
+3. Refresh the app
 
 ## Deployment
 
 Deployment is handled by `.github/workflows/deploy.yml`.
 
-On pushes to `main` or manual workflow dispatch:
+It builds this app and copies the built files into:
 
-1. The app repo is checked out.
-2. Dependencies are installed with `npm ci`.
-3. The app is built with `npx vite build --base=/tour/`.
-4. The Pages repo `UniverseMakers/universemakers.github.io` is checked out.
-5. The generated `dist` output is copied into `pages-repo/tour`.
-6. The workflow commits and pushes the updated `tour/` directory to the Pages repo.
+- `UniverseMakers/universemakers.github.io/tour`
 
-The required repository secret is:
+This repository must have a GitHub Actions secret named:
 
 - `PAGES_DEPLOY_TOKEN`
 
-That token must exist in this repository's GitHub Actions secrets and must have permission to push to `UniverseMakers/universemakers.github.io`.
+That token must have permission to push to `UniverseMakers/universemakers.github.io`.
