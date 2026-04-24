@@ -1,0 +1,74 @@
+id: example-room
+title: Example Room
+
+scenes:
+  - id: start
+    title: Start
+    start: true
+    panorama: /panoramas/example-room/start.jpg
+    position:
+      x: 0.5
+      y: 0.95
+    initialView:
+      yaw: 0
+      pitch: 0
+      fov: 90
+    links:
+      - target: scene-2
+        label: Move to scene 2
+        yaw: 18
+        pitch: -6
+    info:
+      - id: welcome
+        title: Welcome
+        body: This is the starting point for the COSMA room tour example.
+        yaw: -28
+        pitch: 4
+
+  - id: scene-2
+    title: Scene 2
+    panorama: /panoramas/example-room/scene-2.jpg
+    position:
+      x: 0.65
+      y: 0.5
+    initialView:
+      yaw: 180
+      pitch: 0
+      fov: 90
+    links:
+      - target: start
+        label: Back to start
+        yaw: 185
+        pitch: -8
+      - target: scene-3
+        label: Move to scene 3
+        yaw: 15
+        pitch: -5
+    info:
+      - id: rack-note
+        title: Example note
+        body: Info hotspots are authored in YAML and open a React overlay when clicked.
+        yaw: -35
+        pitch: 6
+
+  - id: scene-3
+    title: Scene 3
+    panorama: /panoramas/example-room/scene-3.jpg
+    position:
+      x: 0.35
+      y: 0.15
+    initialView:
+      yaw: 160
+      pitch: 0
+      fov: 90
+    links:
+      - target: scene-2
+        label: Back to scene 2
+        yaw: 180
+        pitch: -10
+    info:
+      - id: future-minimap
+        title: Future minimap anchor
+        body: Normalized x and y coordinates are stored now so a minimap can be added later.
+        yaw: 42
+        pitch: 8
