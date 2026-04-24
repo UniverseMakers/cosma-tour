@@ -16,14 +16,19 @@ scenes:
     links:
       - target: scene-2
         label: Move to scene 2
-        yaw: 18
-        pitch: -6
+        yaw: 10
+        pitch: -14
     info:
       - id: welcome
-        title: Welcome
-        body: This is the starting point for the COSMA room tour example.
-        yaw: -28
-        pitch: 4
+        title: COSMA at Durham
+        body: COSMA is hosted by the Institute for Computational Cosmology at Durham University and is used by cosmologists, astronomers and particle physicists for large-scale simulation and data-intensive research.
+        yaw: -24
+        pitch: 6
+      - id: dirac
+        title: DiRAC memory-intensive system
+        body: COSMA is Durham's DiRAC memory-intensive system, part of the UK national facility that supports research in cosmology, astrophysics, particle physics and nuclear physics.
+        yaw: 34
+        pitch: 7
 
   - id: scene-2
     title: Scene 2
@@ -38,18 +43,23 @@ scenes:
     links:
       - target: start
         label: Back to start
-        yaw: 185
-        pitch: -8
+        yaw: 192
+        pitch: -14
       - target: scene-3
         label: Move to scene 3
-        yaw: 15
-        pitch: -5
+        yaw: 6
+        pitch: -13
     info:
-      - id: rack-note
-        title: Example note
-        body: Info hotspots are authored in YAML and open a React overlay when clicked.
-        yaw: -35
-        pitch: 6
+      - id: memory
+        title: High-memory capability
+        body: Durham describes COSMA as a memory-intensive platform with 600 terabytes of RAM and more than 20 petabytes of storage, including a large high-speed tier for demanding simulation workloads.
+        yaw: -26
+        pitch: 7
+      - id: eagle
+        title: EAGLE and Virgo simulations
+        body: COSMA underpins major cosmology projects including the Virgo Consortium and the EAGLE simulations, which are used to study how realistic galaxies form and evolve across cosmic time.
+        yaw: 48
+        pitch: 5
 
   - id: scene-3
     title: Scene 3
@@ -64,11 +74,16 @@ scenes:
     links:
       - target: scene-2
         label: Back to scene 2
-        yaw: 180
-        pitch: -10
+        yaw: 170
+        pitch: -14
     info:
-      - id: future-minimap
-        title: Future minimap anchor
-        body: Normalized x and y coordinates are stored now so a minimap can be added later.
-        yaw: 42
+      - id: research
+        title: COSMA research users
+        body: Alongside the ICC, COSMA supports work across Durham research groups including the Institute for Particle Physics Phenomenology, the Centre for Extragalactic Astronomy, Mathematical Sciences and Computer Science.
+        yaw: 38
         pitch: 8
+      - id: outreach
+        title: Outreach and public engagement
+        body: COSMA simulations also feed into outreach projects such as Galaxy Makers and public-facing visualisations inspired by EAGLE and other Durham cosmology work.
+        yaw: -34
+        pitch: 9
