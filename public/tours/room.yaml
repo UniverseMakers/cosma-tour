@@ -1,5 +1,5 @@
 id: example-room
-title: Example Room
+title: Cosma at Durham
 
 scenes:
   - id: start
@@ -16,18 +16,18 @@ scenes:
     links:
       - target: scene-2
         label: Move to scene 2
-        yaw: 10
-        pitch: -14
+        yaw: 0
+        pitch: 0
     info:
       - id: welcome
         title: COSMA at Durham
         body: COSMA is hosted by the Institute for Computational Cosmology at Durham University and is used by cosmologists, astronomers and particle physicists for large-scale simulation and data-intensive research.
-        yaw: -24
-        pitch: 6
+        yaw: 0
+        pitch: 40
       - id: dirac
         title: DiRAC memory-intensive system
         body: COSMA is Durham's DiRAC memory-intensive system, part of the UK national facility that supports research in cosmology, astrophysics, particle physics and nuclear physics.
-        yaw: 34
+        yaw: 220
         pitch: 7
 
   - id: scene-2
