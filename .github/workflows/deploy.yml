@@ -15,10 +15,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check deploy token
-        if: ${{ secrets.PAGES_DEPLOY_TOKEN == '' }}
+        env:
+          PAGES_DEPLOY_TOKEN: ${{ secrets.PAGES_DEPLOY_TOKEN }}
         run: |
+          if [ -z "$PAGES_DEPLOY_TOKEN" ]; then
           echo "PAGES_DEPLOY_TOKEN is required to deploy to UniverseMakers/universemakers.github.io"
           exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
